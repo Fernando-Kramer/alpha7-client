@@ -101,7 +101,9 @@ public class BookController {
             return;
         }
         List<BookDTO> books = service.searchBooks(filters);
-        tableController.fillTable(books);
+        
+        if(books != null)
+        	tableController.fillTable(books);
     }
     
 
@@ -127,34 +129,30 @@ public class BookController {
 	    BookFormDialog dialog = new BookFormDialog(parent, null);
 
 	    dialog.onSave(book -> {
-	        // regra de negócio
-	        System.out.println("Salvando: " + book.getTitle());
-	        // service.save(book);
-	        // reloadTable();
+	    	if(book != null)
+	         service.saveBook(book);
 	    });
 
 	    dialog.onRemove(book -> {
-	        System.out.println("Removendo: " + book.getTitle());
-	        // service.delete(book);
-	        // reloadTable();
+	    	if(book.getId() != null)
+	         service.deleteBook(book.getId());
 	    });
 	    
 	    dialog.onFindByIsbn(isbn -> {
 	    	
 	        BookDTO dto = service.searchByIsbnOpenLibrary(isbn);
 	        
-	        System.out.println(dto.toString());
-
-	        if (dto != null) {
-	            dialog.fillForm(dto);
-	        } else {
-	            JOptionPane.showMessageDialog(
-	                parent,
-	                "Livro não encontrado para o ISBN informado",
-	                "Aviso",
-	                JOptionPane.WARNING_MESSAGE
-	            );
+	        if(dto == null) {
+	        	JOptionPane.showMessageDialog(
+		                parent,
+		                "Livro não encontrado para o ISBN informado",
+		                "Aviso",
+		                JOptionPane.WARNING_MESSAGE
+		            );
+	        	return;
 	        }
+	        
+	        dialog.fillForm(dto);
 	    });
 	    
 	    dialog.setVisible(true);

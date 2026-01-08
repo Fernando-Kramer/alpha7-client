@@ -1,6 +1,9 @@
 package br.com.alpha7.client.view.book;
 
 import java.awt.BorderLayout;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.JFormattedTextField;
@@ -12,6 +15,8 @@ import br.com.alpha7.client.infrastructure.dto.AuthorDTO;
 import br.com.alpha7.client.infrastructure.dto.BookDTO;
 import br.com.alpha7.client.infrastructure.dto.PublisherDTO;
 import br.com.alpha7.client.infrastructure.utils.SwingFieldUtil;
+import br.com.alpha7.client.infrastructure.validation.FormValidator;
+import br.com.alpha7.client.infrastructure.validation.ValidationDialogHandler;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -185,7 +190,32 @@ public class BookFormPanel extends JPanel {
      * @return {@link BookDTO} com os dados do formulário (implementação futura)
      */
 	public BookDTO getFormData() {
-		return null;
+		
+		FormValidator validator = new FormValidator();
+		
+        Long id = validator.getLong(txtId);
+        String isbn = validator.getISBN(txtIsbn);
+        String title = validator.getString(txtTitle);
+        List<AuthorDTO> authors = getAutor(validator.getString(txtAuthor));
+        List<PublisherDTO> publishers = getPublisher(validator.getString(txtPublisher));
+        LocalDate publicationDate = validator.getLocalDate(
+        		txtPublicationDate,
+                DateTimeFormatter.ofPattern("dd/MM/yyyy")
+        );
+
+        if (validator.hasErrors()) {
+            ValidationDialogHandler.showErrors(this, validator.getErrors());
+            return null;
+        }
+        
+        return BookDTO.builder()
+        		.id(id)
+        		.isbn(isbn)
+        		.title(title)
+        		.authors(authors)
+        		.publishers(publishers)
+        		.publicationDate(publicationDate)
+        		.build();
 	}
 	
     /**
@@ -226,6 +256,22 @@ public class BookFormPanel extends JPanel {
 
 	public JFormattedTextField getTxtPublicationDate() {
 		return txtPublicationDate;
+	}
+	
+	private List<AuthorDTO> getAutor(String author) {
+	    return Arrays.asList(
+	        AuthorDTO.builder()
+	                 .name(author)
+	                 .build()
+	    );
+	}
+	
+	private List<PublisherDTO> getPublisher(String publisher) { 
+	    return Arrays.asList(
+	    		PublisherDTO.builder()
+		                 .name(publisher)
+		                 .build()
+		    );
 	}
 	
 }
